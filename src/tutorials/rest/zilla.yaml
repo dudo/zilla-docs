@@ -5,6 +5,9 @@ bindings:
   north_tcp_server:
     type: tcp
     kind: server
+    telemetry:
+      metrics:
+        - stream.*
     options:
       host: 0.0.0.0
       port: 7114
@@ -12,6 +15,9 @@ bindings:
   north_http_server:
     type: http
     kind: server
+    telemetry:
+      metrics:
+        - stream.*
     routes:
       - when:
           - headers:
@@ -23,6 +29,9 @@ bindings:
   north_http_kafka_mapping:
     type: http-kafka
     kind: proxy
+    telemetry:
+      metrics:
+        - stream.*
     routes:
       - when:
           - method: POST
@@ -45,10 +54,16 @@ bindings:
   north_kafka_cache_client:
     type: kafka
     kind: cache_client
+    telemetry:
+      metrics:
+        - stream.*
     exit: south_kafka_cache_server
   south_kafka_cache_server:
     type: kafka
     kind: cache_server
+    telemetry:
+      metrics:
+        - stream.*
     options:
       bootstrap:
         - items-snapshots
@@ -58,13 +73,36 @@ bindings:
   south_kafka_client:
     type: kafka
     kind: client
+    telemetry:
+      metrics:
+        - stream.*
     exit: south_kafka_tcp_client
   south_kafka_tcp_client:
     type: tcp
     kind: client
+    telemetry:
+      metrics:
+        - stream.*
     options:
       host: ${{env.KAFKA_HOST}}
       port: ${{env.KAFKA_PORT}}
     routes:
       - when:
           - cidr: 0.0.0.0/0
+
+telemetry:
+
+  # Desired metrics to track
+  metrics:
+    - stream.opens.sent
+    - stream.closes.sent
+
+  # Prometheus endpoint definition
+  exporters:
+    prometheus_metric_exporter:
+      type: prometheus
+      options:
+        endpoints:
+          - scheme: http
+            path: /metrics
+            port: 7190
