@@ -35,20 +35,20 @@ http_kafka_proxy:
         capability: fetch
         topic: items-snapshots
         filters:
-          - key: "${params.id}"
+          - key: ${params.id}
     - when:
         - path: /items/{id}
         - method: GET
-          path: /items/{id};{correlationId}
+          path: /items/{id}_{correlationId}
       exit: kafka_cache_client
       with:
         capability: produce
         topic: items-requests
         acks: leader_only
-        key: "${params.id}"
+        key: ${params.id}
         reply-to: items-responses
         async:
-          location: "/items/${params.id};${correlationId}"
+          location: /items/${params.id}_${correlationId}
 ```
 
 ## Summary
@@ -203,17 +203,17 @@ routes:
       capability: fetch
       topic: items-snapshots
       filters:
-        - key: "${params.id}"
+        - key: ${params.id}
   - when:
       - path: /items/{id}
       - method: GET
-        path: /items/{id};{correlationId}
+        path: /items/{id}_{correlationId}
     exit: kafka_cache_client
     with:
       capability: produce
       topic: items-requests
       acks: leader_only
-      key: "${params.id}"
+      key: ${params.id}
       reply-to: items-responses
 ```
 
@@ -241,7 +241,7 @@ Read more: [When a route matches](../../../concepts/config-intro.md#when-a-route
 routes:
   - when:
       - method: GET
-        path: /items/{id};{correlationId}
+        path: /items/{id}_{correlationId}
 ```
 
 #### when[].method
@@ -298,7 +298,7 @@ with:
   capability: fetch
   topic: items-snapshots
   filters:
-    - key: "${params.id}"
+    - key: ${params.id}
   merge:
     content-type: application/json
     patch:
@@ -375,10 +375,10 @@ with:
   capability: produce
   topic: items-requests
   acks: leader_only
-  key: "${params.id}"
+  key: ${params.id}
   reply-to: items-responses
   async:
-    location: "/items/${params.id};${correlationId}"
+    location: /items/${params.id}_${correlationId}
 ```
 
 #### with.topic
