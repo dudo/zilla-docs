@@ -63,7 +63,7 @@ Find the docker command in the `Verify the Kafka topics were created` section of
 
 ## REST Kafka proxy
 
-Zilla can expose common entity CRUD endpoints with the entity data being stored on Kafka topics. Leveraging Kafka's `cleanup.policy=compact` feature, Zilla enables a standard REST backend architecture with Kafka as the storage layer. Adding an `Idempotency-Key` header during creation will set the message `key` and act as the `ID` for the record. A UUID is generated if no key is sent.
+The [Zilla REST Kafka proxy](../../concepts/kafka-proxies/rest-proxy.md) can expose common entity CRUD endpoints with the entity data being stored on Kafka topics. Leveraging Kafka's `cleanup.policy=compact` feature, Zilla enables a standard REST backend architecture with Kafka as the storage layer. Adding an `Idempotency-Key` header during creation will set the message `key` and act as the `ID` for the record. A UUID is generated if no key is sent.
 
 - **GET** - Fetches all items on the topic or Fetch one item by its key using `/:key`.
 - **POST** - Create a new item with the `Idempotency-Key` header setting the key.
@@ -85,7 +85,7 @@ Zilla can be configured for request-response over Kafka topics both synchronousl
 
 ## SSE Kafka proxy
 
-Zilla can expose a Kafka topic as a Server-sent Events (SSE) stream, enabling a resilient event-driven architecture to be exposed over HTTP. This quickstart will demonstrate streaming data to one session while posting data from another using Zilla and Kafka as the backend.
+The [Zilla SSE Kafka proxy](../../concepts/kafka-proxies/sse-proxy.md) can expose a Kafka topic as a Server-sent Events (SSE) stream, enabling a resilient event-driven architecture to be exposed over HTTP. This quickstart will demonstrate streaming data to one session while posting data from another using Zilla and Kafka as the backend.
 
 - **POST** - Push a new event.
 - **GET:SSE** - Stream all of the events published on the `event-sse` Kafka topic.
@@ -102,7 +102,7 @@ Zilla can be configured for more use cases we can't cover in this quickstart. He
 
 ## gRPC Kafka proxy
 
-Zilla maps the service method's request and response messages directly to Kafka topics. This can include simple RPC request-response messages, but this quickstart demonstrates `Simple-RPC`, `Server-side`, `Client-side`, and `Bidirectional` streaming RPC to a running gRPC server through the `GetFeature`, `ListFeature`, `RecordRoute`, and `RouteChat`, respectively. Zilla is routing all of the messages from the client to the server through Kafka. You can match the individual service calls on the [topics](#kafka-topics) by the matching `key` UUIDs which come from the `zilla:correlation-id` header.
+The [Zilla gRPC Kafka proxy](../../concepts/kafka-proxies/grpc-proxy.md) maps the service method's request and response messages directly to Kafka topics. This can include simple RPC request-response messages, but this quickstart demonstrates `Simple-RPC`, `Server-side`, `Client-side`, and `Bidirectional` streaming RPC to a running gRPC server through the `GetFeature`, `ListFeature`, `RecordRoute`, and `RouteChat`, respectively. Zilla is routing all of the messages from the client to the server through Kafka. You can match the individual service calls on the [topics](#kafka-topics) by the matching `key` UUIDs which come from the `zilla:correlation-id` header.
 
 - **RouteGuide** - Proxy messages through Kafka to a running gRPC server.
 - **EchoService** - Zilla implements a simple message echo service.
@@ -124,7 +124,7 @@ Zilla can be configured for more use cases we can't cover in this quickstart. He
 
 ## MQTT Kafka proxy
 
-Zilla provides an MQTT broker by implementing the v5 Specification. Clients can connect and send MQTT messages where zilla will store them in one of three defined Kafka topics. This quickstart manages all messages, messages marked with the `retained` flag, and sessions on any topic.
+The [Zilla MQTT Kafka proxy](../../concepts/kafka-proxies/mqtt-proxy.md) provides an MQTT broker for devices and client libraries to natively interact with Kafka. Clients can connect and send MQTT messages where Zilla will store them in one of three defined Kafka topics. This quickstart manages all messages, messages marked with the `retained` flag, and sessions on any topic.
 
 ::: info Postman MQTT in BETA
 Postman recently released MQTT support into [public BETA](https://blog.postman.com/postman-supports-mqtt-apis/), and we are using it for this quickstart. Be mindful that there may be minor issues encountered using it.
