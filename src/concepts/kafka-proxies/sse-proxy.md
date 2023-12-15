@@ -1,53 +1,25 @@
 ---
-description: There is an increasing rise in integrating the event stream into front ends where companies are starting to adopt Server-sent Events (SSE) standards.
+description: The Zilla Server-sent Events (SSE) Kafka Proxy exposes an SSE stream of Kafka messages.
 prev: false
 next: /tutorials/sse/sse-intro.md
 ---
 
 # SSE Kafka Proxy
 
-There is an increasing rise in integrating the event stream into front ends where companies are starting to adopt Server-sent Events (SSE) standards. `SSE` naturally fits into the event-driven architecture and you will be able to take advantage of all the benefits it provides such as SDK-free and the ability to auto-reconnect in case of an unstable connection(Be resilient to faults). Zilla supports SSE protocol that you can easily configure the frontend SSE with Kafka topic.
+The Zilla Server-sent Events (SSE) Kafka Proxy exposes an SSE stream of Kafka messages.
 
-A brief explanation of replaceable values from the config examples below:
+An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server allows a web browser using the `EventSource` interface to open a connection and receive a stream of text from the server, interpreted as individual messages. Zilla relays text messages on a Kafka topic into the event stream. Individual Kafka topics can be mapped to the client connection path.
 
-- `ENDPOINT_PATH`: HTTP path for example `/tasks`
-- `KAFKA_TOPIC`: The Kafka topic that you want to stream from
+## Message Filtering
 
-## Configure Endpoint
+Messages from Kafka are mapped using a route that will define a path for the client to connect and the topic for the messages. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be a dynamic segment of the HTTP path used when the client connects.
 
-Configuring `Zilla` with SSE endpoint and Kafka binding is as simple as it is shown below:
+## Reliable Delivery
 
-::: code-tabs#yaml
+Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly.
 
-@tab zilla.yaml
+## Continuous Authorization
 
-```yaml
-sse_server:
-  type: sse
-  kind: server
-  exit: sse_kafka_proxy
-sse_kafka_proxy:
-  type: sse-kafka
-  kind: proxy
-  routes:
-    - when:
-        - path: ENDPOINT_PATH
-      with:
-        topic: KAFKA_TOPIC
-        event:
-          id: '["${base64(key)}","${etag}"]'
-      exit: kafka_cache_client
+Like the [REST Proxy](./rest-proxy.md), you can secure `SSE` endpoints. Unlike HTTP, which authorizes individual requests, Zilla continuously authorizes the long-lived SSE connection stream. Zilla will send a "challenge" event, triggering the client to send up-to-date authorization credentials, such as a JWT token, before expiration. Zilla adheres to the secure by default method meaning, if authorization expires before the client responds to the "challenge" event, then the response stream is terminated.
 
-```
-
-:::
-
-As shown above you can describe your event id in case you want to retrieve the message `key` or `etag`.
-
-### Authorization
-
-Similar to [REST Proxy](./rest-proxy.md) you can secure the `SSE` endpoints as well which allows you to continuously authorize the stream which unlike `HTTP` request, `SSE` is a long-lived connection.
-
-### More
-
-For the full capability of `SSE` configure you can check out Zilla Runtime Configuration Reference: [sse](../../reference/config/bindings/binding-sse.md) Binding, [sse-kafka](../../reference/config/bindings/binding-sse-kafka.md) Binding.
+Multiple SSE streams on the same HTTP/2 connection and authorized by the same JWT token are reauthorized by a single "challenge" event response from the client. They are all terminated if the token expiration isn't updated.
