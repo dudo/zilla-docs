@@ -63,7 +63,7 @@ Find the docker command in the `Verify the Kafka topics were created` section of
 
 ## REST Kafka proxy
 
-The [Zilla REST Kafka proxy](../../concepts/kafka-proxies/rest-proxy.md) can expose common entity CRUD endpoints with the entity data being stored on Kafka topics. Leveraging Kafka's `cleanup.policy=compact` feature, Zilla enables a standard REST backend architecture with Kafka as the storage layer. Adding an `Idempotency-Key` header during creation will set the message `key` and act as the `ID` for the record. A UUID is generated if no key is sent.
+The [Zilla REST Kafka proxy](../../concepts/kafka-proxies/http-proxy.md) can expose common entity CRUD endpoints with the entity data being stored on Kafka topics. Leveraging Kafka's `cleanup.policy=compact` feature, Zilla enables a standard REST backend architecture with Kafka as the storage layer. Adding an `Idempotency-Key` header during creation will set the message `key` and act as the `ID` for the record. A UUID is generated if no key is sent.
 
 - **GET** - Fetches all items on the topic or Fetch one item by its key using `/:key`.
 - **POST** - Create a new item with the `Idempotency-Key` header setting the key.
@@ -75,7 +75,6 @@ The [items-crud](http://localhost:8080/ui/clusters/local/all-topics/items-crud/m
 ::: note Going Deeper
 Zilla can be configured for request-response over Kafka topics both synchronously and asynchronously, and more that we can't cover in this quickstart. Here are some other resources you will want to check out.
 
-- [REST proxy guide](../../concepts/kafka-proxies/rest-proxy.md)
 - [JWT Auth example](https://github.com/aklivity/zilla-examples/tree/main/http.echo.jwt)
 - [Kafka cache example](https://github.com/aklivity/zilla-examples/tree/main/http.kafka.cache)
 - [Kafka sync example](https://github.com/aklivity/zilla-examples/tree/main/http.kafka.sync)
