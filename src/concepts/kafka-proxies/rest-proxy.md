@@ -6,11 +6,9 @@ next: /tutorials/rest/rest-intro.md
 
 # REST Kafka Proxy
 
-Zilla lets you configure application-centric REST API endpoints that unlock `Apache Kafka` event-driven architectures. An application-centric REST API for Kafka gives the developer freedom to define their own HTTP mapping to Kafka, with control over the topic, message key, message headers, message value, and reply-to topic. This guide will explain all the aspects of configuring Zilla with REST API endpoints.
+Zilla lets you configure application-centric REST API endpoints that unlock Kafka event-driven architectures. An application-centric REST API for Kafka gives the developer freedom to define their own HTTP mapping to Kafka, with control over the topic, message key, message headers, message value, and reply-to topic. This guide will explain all the aspects of configuring Zilla with REST API endpoints.
 
-## Correlated Request-Response
-
-### Configure Endpoints
+## Configure Endpoints
 
 Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`.
 
@@ -24,29 +22,33 @@ Kafka **Fetch** capability with HTTP request methods such as `GET` :
 
 ### Dynamic URL parameters
 
-It's a common case when you want to work with a specific entity e.g. `/tasks/123`. To make sure the dynamic value `123` is correctly matched and forwarded API endpoint can be configured as in the following example:
+Zilla can map URL path params and headers, e.g. `/tasks/123` could extract the id `123`. 
+
+## Correlated Request-Response
+
+Zilla manages the HTTP lifecycle with both the request and response payload represented with on the event stream. Each message is correlated to each other with a `zilla:correlation-id` header enabling both Zilla and Kafka workflows to act based on the use case. Correlated messages can be on the same or different Kafka topics
 
 ### sync
 
-HTTP request-response over a pair of Kafka topics with correlation. Supports synchronous interaction, blocked waiting for a correlated response.
+A synchronous interaction from the client will hold the connection open waiting for the correlated response message to be delivered to the caller.
 
 ### async
 
-HTTP request-response over a pair of Kafka topics with correlation. Supports asynchronous interaction, returning immediately with `202 Accepted` plus location to retrieve a correlated response. Supports `prefer: wait=N` to retrieve the correlated response immediately as soon as it becomes available, with no need for client polling.
-
-### CORS
-
-Zilla supports Cross-Origin Resource Sharing (CORS) and allows you to specify fine-grained access control including specific request origins, methods and headers allowed, and specific response headers exposed. Since it acts more like a guard and has no dependency on Apache Kafka configuration, you need to define it in the [http](../../reference/config/bindings/binding-http.md) binding.
+An asynchronous interaction is managed over a pair of Kafka topics. An initiating request returns can include a `prefer: respond-async` header which will immediately with `202 Accepted` plus the location to retrieve a correlated response. A waiting request can then send a request including the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, this removes the need for client polling.
 
 ## Oneway
 
-Produce an HTTP request payload to a Kafka topic, extracting message key and/or headers from segments of the HTTP path if needed.
+Clients can produce an HTTP request payload to a Kafka topic. A Kafka message key and/or headers can be set using `${params}` from the HTTP path.
 
 ## Cache
 
 Retrieve message from a Kafka topic, filtered by message key and/or headers, with key and/or header values extracted from segments of the HTTP path if needed.
 
 Returns an `etag` header with HTTP response. Supports conditional `GET if-none-match request`, returning `304` if not modified or `200` if modified (with a new `etag` header). Supports `prefer: wait=N` to respond as soon as messages become available, no need for client polling.
+
+## CORS
+
+Zilla supports Cross-Origin Resource Sharing (CORS) and allows you to specify fine-grained access control including specific request origins, methods and headers allowed, and specific response headers exposed. Since it acts more like a guard and has no dependency on Apache Kafka configuration, you need to define it in the [http](../../reference/config/bindings/binding-http.md) binding.
 
 ## Authorization
 
