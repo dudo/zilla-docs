@@ -415,7 +415,13 @@ Kafka reply-to topic name.
 
 > `object`
 
-HTTP response headers, with values optionally referencing path parameter or `${correlationId}`.
+Allows an HTTP response to be retrieved asynchronously
+
+##### async.location
+
+> `string`
+
+Path where the async result can be fetched, with values optionally referencing path parameter or `${correlationId}`.
 
 ---
 
