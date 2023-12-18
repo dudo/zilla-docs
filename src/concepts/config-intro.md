@@ -68,6 +68,10 @@ A condition will attempt to match the target stream exactly against the configur
 [kafka-grpc]:../reference/config/bindings/binding-kafka-grpc.md#routes
 [mqtt-kafka]:../reference/config/bindings/binding-mqtt-kafka.md#routes
 
+### Dynamic path parameters
+
+Path segments can be parsed into named values of the `${params}` object and used in other parts of a binding. Meaning a `/tasks/123` path with a `/tasks/{id}` mapping will extract `123` in the `${params.id}` field.
+
 ### Routing With extra params
 
 After the route logic matches, additional parameters are applied `with` the inbound data streams.

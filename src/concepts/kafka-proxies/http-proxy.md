@@ -1,0 +1,67 @@
+---
+description: Zilla lets you configure application-centric REST API and SSE stream endpoints that unlock Kafka event-driven architectures.
+prev: false
+next: /tutorials/rest/rest-intro.md
+---
+
+# HTTP Kafka Proxy
+
+Zilla lets you configure application-centric REST API and SSE stream endpoints that unlock Kafka event-driven architectures. Zilla gives the developer freedom to define their own HTTP mapping to Kafka, with control over the topics, message key, message headers, and payload. Zilla enables an HTTP client to connect and interact with Kafka without needing to understand Kafka-specific paradigms.
+
+## Configure Endpoints
+
+Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`. Zilla can map route REST urls using [wildcard pattern matching](../../concepts/config-intro.html#pattern-matching) and [dynamic path params](../../concepts/config-intro.html#dynamic-path-parameters).
+
+### HTTP request methods
+
+Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.html#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics.
+
+## Correlated Request-Response
+
+Zilla manages the HTTP lifecycle with the request and response payload on the event stream. Each message is correlated to each other with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
+
+### sync
+
+A synchronous interaction from the client will open the connection and wait for the correlated response message to be delivered to the caller.
+
+### async
+
+An asynchronous interaction is managed over a pair of Kafka topics. An initiating request can include a `prefer: respond-async` header which will immediately return with `202 Accepted` plus the location to retrieve a correlated response. The client then sends a request to the returned location with the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, removing the need for client polling.
+
+## SSE Streaming
+
+The Zilla Server-sent Events (SSE) Kafka Proxy exposes an SSE stream of Kafka messages.
+
+An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server allows a web browser using the `EventSource` interface to open a connection and receive a stream of text from the server, interpreted as individual messages. Zilla relays text messages on a Kafka topic into the event stream. Individual Kafka topics can be mapped to the client connection path.
+
+### Message Filtering
+
+Messages from Kafka are mapped using a route that will define a path for the client to connect and the message's topic. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be a [path param](../../concepts/config-intro.html#dynamic-path-parameters) used when the client connects.
+
+### Reliable Delivery
+
+Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly.
+
+## Oneway
+
+Clients can produce an HTTP request payload to a Kafka topic. A Kafka message key and/or headers can be set using [path params](../../concepts/config-intro.html#dynamic-path-parameters).
+
+## Cache
+
+Bindings can retrieve messages from a Kafka topic, filtered by message key and/or headers, with key and/or header values extracted from the [path params](../../concepts/config-intro.html#dynamic-path-parameters).
+
+An HTTP response returns with an `etag` header. This fetch supports a conditional `GET if-none-match request`, returning `304` if not modified or `200` if modified (with a new `etag` header).
+
+## CORS
+
+Zilla supports Cross-Origin Resource Sharing (CORS) and allows you to specify fine-grained access control, including specific request origins, methods and headers allowed, and specific response headers exposed. Since it acts more like a guard and has no dependency on Apache Kafka configuration, you need to define it in the [http](../../reference/config/bindings/binding-http.md) binding.
+
+## Authorization
+
+Zilla has a modular config that includes the concept of a [Guard](../../reference/config/overview.md#guards) where you define your `guard` configuration and reference that `guard` to authorize a specific endpoint. Currently, Zilla supports JSON Web Token (JWT) authorization with the [`jwt`](../../reference/config/guards/guard-jwt.md) Guard.
+
+### SSE Continuous Authorization
+
+Unlike REST, which authorizes individual requests, Zilla continuously authorizes the long-lived SSE connection stream. Zilla will send a "challenge" event, triggering the client to send up-to-date authorization credentials, such as a JWT token, before expiration. Zilla adheres to the secure by default method meaning, if authorization expires before the client responds to the "challenge" event, then the response stream is terminated.
+
+Multiple SSE streams on the same HTTP/2 connection and authorized by the same JWT token are reauthorized by a single "challenge" event response from the client. They are all terminated if the token expiration isn't updated.

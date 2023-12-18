@@ -76,7 +76,6 @@ The [items-crud](http://localhost:8080/ui/clusters/local/all-topics/items-crud/m
 Zilla can be configured for request-response over Kafka topics both synchronously and asynchronously, and more that we can't cover in this quickstart. Here are some other resources you will want to check out.
 
 - [REST proxy guide](../../concepts/kafka-proxies/rest-proxy.md)
-- [HTTP proxy example](https://github.com/aklivity/zilla-examples/tree/main/http.proxy)
 - [JWT Auth example](https://github.com/aklivity/zilla-examples/tree/main/http.echo.jwt)
 - [Kafka cache example](https://github.com/aklivity/zilla-examples/tree/main/http.kafka.cache)
 - [Kafka sync example](https://github.com/aklivity/zilla-examples/tree/main/http.kafka.sync)
@@ -85,7 +84,7 @@ Zilla can be configured for request-response over Kafka topics both synchronousl
 
 ## SSE Kafka proxy
 
-The [Zilla SSE Kafka proxy](../../concepts/kafka-proxies/sse-proxy.md) can expose a Kafka topic as a Server-sent Events (SSE) stream, enabling a resilient event-driven architecture to be exposed over HTTP. This quickstart will demonstrate streaming data to one session while posting data from another using Zilla and Kafka as the backend.
+The [Zilla SSE Kafka proxy](../../concepts/kafka-proxies/http-proxy.md#sse-streaming) can expose a Kafka topic as a Server-sent Events (SSE) stream, enabling a resilient event-driven architecture to be exposed over HTTP. This quickstart will demonstrate streaming data to one session while posting data from another using Zilla and Kafka as the backend.
 
 - **POST** - Push a new event.
 - **GET:SSE** - Stream all of the events published on the `event-sse` Kafka topic.
@@ -95,9 +94,8 @@ The [events-sse](http://localhost:8080/ui/clusters/local/all-topics/events-sse/m
 ::: note Going Deeper
 Zilla can be configured for more use cases we can't cover in this quickstart. Here are some other interesting examples you will want to check out.
 
-- [REST proxy guide](../../concepts/kafka-proxies/sse-proxy.md)
+- [SSE Kafka proxy intro](../../tutorials/sse/sse-intro.md)
 - [Kafka fanout example](https://github.com/aklivity/zilla-examples/tree/main/sse.kafka.fanout)
-- [JWT Auth example](https://github.com/aklivity/zilla-examples/tree/main/sse.proxy.jwt)
 :::
 
 ## gRPC Kafka proxy
