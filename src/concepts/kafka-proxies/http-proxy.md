@@ -10,11 +10,11 @@ Zilla lets you configure application-centric REST API and SSE stream endpoints t
 
 ## Configure Endpoints
 
-Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`. Zilla can map route REST urls using [wildcard pattern matching](../../concepts/config-intro.html#pattern-matching) and [dynamic path params](../../concepts/config-intro.html#dynamic-path-parameters).
+Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`. Zilla can map route REST urls using [wildcard pattern matching](../../concepts/config-intro.md#pattern-matching) and [dynamic path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
 ### HTTP request methods
 
-Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.html#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics.
+Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.md#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics.
 
 ## Correlated Request-Response
 
@@ -36,7 +36,7 @@ An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server 
 
 ### Message Filtering
 
-Messages from Kafka are mapped using a route that will define a path for the client to connect and the message's topic. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be a [path param](../../concepts/config-intro.html#dynamic-path-parameters) used when the client connects.
+Messages from Kafka are mapped using a route that will define a path for the client to connect and the message's topic. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be a [path param](../../concepts/config-intro.md#dynamic-path-parameters) used when the client connects.
 
 ### Reliable Delivery
 
@@ -44,11 +44,11 @@ Zilla sends the event id and last-event-id header to recover from an interrupted
 
 ## Oneway
 
-Clients can produce an HTTP request payload to a Kafka topic. A Kafka message key and/or headers can be set using [path params](../../concepts/config-intro.html#dynamic-path-parameters).
+Clients can produce an HTTP request payload to a Kafka topic. A Kafka message key and/or headers can be set using [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
 ## Cache
 
-Bindings can retrieve messages from a Kafka topic, filtered by message key and/or headers, with key and/or header values extracted from the [path params](../../concepts/config-intro.html#dynamic-path-parameters).
+Bindings can retrieve messages from a Kafka topic, filtered by message key and/or headers, with key and/or header values extracted from the [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
 An HTTP response returns with an `etag` header. This fetch supports a conditional `GET if-none-match request`, returning `304` if not modified or `200` if modified (with a new `etag` header).
 
