@@ -184,6 +184,8 @@ Kafka header name for request-response correlation identifier.
 
 Conditional `http-kafka`-specific routes for adapting `http` request-response streams to `kafka` topic streams.
 
+Single topic:
+
 ```yaml
 routes:
   - when:
@@ -205,16 +207,43 @@ routes:
       filters:
         - key: ${params.id}
   - when:
-      - path: /items/{id}
+      - method: POST
+        path: /items
+    exit: kafka_cache_client
+    with:
+      capability: produce
+      topic: items-crud
+      key: ${idempotencyKey}
+```
+
+Correlated Request-Response topics:
+
+```yaml
+routes:
+  - when:
       - method: GET
         path: /items/{id}_{correlationId}
     exit: kafka_cache_client
     with:
+      capability: Fetch
+      topic: items-responses
+      filters:
+        - key: ${params.id}
+          headers:
+            - zilla:correlation-id: ${correlationId}
+  - when:
+      - method: GET
+        path: /items/{id}_{correlationId}
+      - method: PUT
+        path: /items/{id}
+    exit: kafka_cache_client
+    with:
       capability: produce
       topic: items-requests
-      acks: leader_only
       key: ${params.id}
       reply-to: items-responses
+      async:
+        location: /items/${params.id}_${correlationId}
 ```
 
 ### routes[].guarded

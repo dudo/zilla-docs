@@ -14,11 +14,11 @@ Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../r
 
 ### HTTP request methods
 
-Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.md#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics.
+Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.md#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics. This enables CRUD object management on a single Kafka topic.
 
 ## Correlated Request-Response
 
-Zilla manages the HTTP lifecycle with the request and response payload on the event stream. Each request message is correlated to the corresponding response message with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
+Zilla manages the HTTP lifecycle with the request and response payload on the event stream over a pair of Kafka topics. Each request message is correlated to the corresponding response message with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
 
 ### sync
 
@@ -26,7 +26,7 @@ A synchronous interaction from the client will open the connection and wait for 
 
 ### async
 
-An asynchronous interaction is managed over a pair of Kafka topics. An initiating request can include a `prefer: respond-async` header which will immediately return with `202 Accepted` plus the location to retrieve a correlated response. The client then sends a request to the returned location with the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, removing the need for client polling.
+An asynchronous interaction includes a `prefer: respond-async` header which will immediately return with `202 Accepted` plus the location to retrieve a correlated response. The client then sends a request to the returned location with the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, removing the need for client polling.
 
 ## SSE Streaming
 
