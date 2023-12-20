@@ -18,7 +18,7 @@ Zilla separates the HTTP request methods in two groups called capabilities, prod
 
 ## Correlated Request-Response
 
-Zilla manages the HTTP lifecycle with the request and response payload on the event stream. Each message is correlated to each other with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
+Zilla manages the HTTP lifecycle with the request and response payload on the event stream. Each request message is correlated to the corresponding response message with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
 
 ### sync
 
@@ -36,11 +36,11 @@ An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server 
 
 ### Message Filtering
 
-Messages from Kafka are mapped using a route that will define a path for the client to connect and the message's topic. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be a [path param](../../concepts/config-intro.md#dynamic-path-parameters) used when the client connects.
+The source topic for messages is defined in a route, and the route is matched by the path defined for the client to connect. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) the messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be pulled from a [path param](../../concepts/config-intro.md#dynamic-path-parameters).
 
 ### Reliable Delivery
 
-Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly.
+Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly. An interrupted SSE stream can recover by connecting to any Zilla instance in the same auto-scaling group because each Zilla instance is stateless.
 
 ## Oneway
 
