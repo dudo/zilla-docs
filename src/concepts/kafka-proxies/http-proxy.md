@@ -6,51 +6,51 @@ next: /tutorials/rest/rest-intro.md
 
 # HTTP Kafka Proxy
 
-Zilla lets you configure application-centric REST API and SSE stream endpoints that unlock Kafka event-driven architectures. Zilla gives the developer freedom to define their own HTTP mapping to Kafka, with control over the topics, message key, message headers, and payload. Zilla enables an HTTP client to connect and interact with Kafka without needing to understand Kafka-specific paradigms.
+Zilla lets you configure application-centric REST APIs and SSE streams that unlock Kafka event-driven architectures. A developer has the freedom to define their own HTTP mapping to Kafka, with control over the topics, message key, message headers, and payload. Any HTTP client can interact with Kafka without navigating Kafka-specific paradigms.
 
 ## Configure Endpoints
 
-Zilla can be configured to map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`. Zilla can map route REST urls using [wildcard pattern matching](../../concepts/config-intro.md#pattern-matching) and [dynamic path params](../../concepts/config-intro.md#dynamic-path-parameters).
+Zilla can map REST APIs to Kafka using the [http-kafka](../../reference/config/bindings/binding-http-kafka.md) binding in `zilla.yaml`. Zilla routes REST urls using [wildcard pattern matching](../../concepts/config-intro.md#pattern-matching) and [dynamic path params](../../concepts/config-intro.md#dynamic-path-parameters). Dynamic path matching and custom message routing from endpoints to Kafka topics help prevent API lock-in. 
 
 ### HTTP request methods
 
-Zilla separates the HTTP request methods in two groups called capabilities, produce and fetch. The [produce](../../concepts/config-intro.md#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that put messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that gets messages off of Kafka topics. This enables CRUD object management on a single Kafka topic.
+Zilla separates the HTTP request methods into two groups called capabilities: produce and fetch. The [produce](../../concepts/config-intro.md#the-fetch-capability) capability handles method types `POST`, `PUT`, `DELETE`, and `PATCH` that produces messages onto Kafka topics. The [fetch](../../reference/config/bindings/binding-http-kafka.md#with-capability-fetch) capability handles the `GET` method that fetches messages from Kafka topics. One exception is for a route managing async correlation. The `produce` route will have two when clauses: a `PUT` clause for submission and a `GET` clause matching the `async.location` path returned to the caller.
 
 ## Correlated Request-Response
 
-Zilla manages the HTTP lifecycle with the request and response payload on the event stream over a pair of Kafka topics. Each request message is correlated to the corresponding response message with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on. Correlated messages can be on the same or different Kafka topics.
+Zilla manages the HTTP lifecycle with the request and response payload on the event stream over a pair of Kafka topics. Each request message is correlated to the corresponding response message with a `zilla:correlation-id` header, providing an identifier for both Zilla and Kafka workflows to act on.
 
 ### sync
 
-A synchronous interaction from the client will open the connection and wait for the correlated response message to be delivered to the caller.
+A synchronous interaction from the client will open a connection, producing a request message. The connection will remain open, waiting for the correlated response message to be fetched and returned to the caller.
 
 ### async
 
-An asynchronous interaction includes a `prefer: respond-async` header which will immediately return with `202 Accepted` plus the location to retrieve a correlated response. The client then sends a request to the returned location with the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, removing the need for client polling.
+An asynchronous interaction includes a `prefer: respond-async` header. After producing a request message, the connection will immediately return with `202 Accepted` plus the location path to retrieve a correlated response. The client then sends a request to the returned location path with the `prefer: wait=N` header to retrieve the correlated response as soon as it becomes available, removing the need for client polling.
 
 ## SSE Streaming
 
-The Zilla Server-sent Events (SSE) Kafka Proxy exposes an SSE stream of Kafka messages.
+The Zilla Server-sent Events (SSE) Kafka Proxy exposes an SSE stream of Kafka messages using the [sse-kafka](../../reference/config/bindings/binding-sse-kafka.md) binding.
 
-An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server allows a web browser using the `EventSource` interface to open a connection and receive a stream of text from the server, interpreted as individual messages. Zilla relays text messages on a Kafka topic into the event stream. Individual Kafka topics can be mapped to the client connection path.
+An [SSE](https://html.spec.whatwg.org/multipage/server-sent-events.html) server allows a web browser using the `EventSource` interface to open a connection and receive a stream of text from the server, interpreted as individual messages. Zilla relays text messages on a Kafka topic into the event stream.
 
 ### Message Filtering
 
-The source topic for messages is defined in a route, and the route is matched by the path defined for the client to connect. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) the messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be pulled from a [path param](../../concepts/config-intro.md#dynamic-path-parameters).
+The message source topic is defined in a route, and the route is matched by the path defined for the client to connect. A route can [filter](../../reference/config/bindings/binding-sse-kafka.md#routes-with) the messages delivered to the SSE stream using the message key and headers. A filter's value can be statically defined in the config or be pulled from a [path param](../../concepts/config-intro.md#dynamic-path-parameters).
 
 ### Reliable Delivery
 
-Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly. An interrupted SSE stream can recover by connecting to any Zilla instance in the same auto-scaling group because each Zilla instance is stateless.
+Zilla sends the event id and last-event-id header to recover from an interrupted stream without message loss and without needing the client to acknowledge message receipt explicitly. An interrupted SSE stream is recovered by connecting to any Zilla instance in the same auto-scaling group because each Zilla instance is stateless.
 
 ## Oneway
 
-Clients can produce an HTTP request payload to a Kafka topic. A Kafka message key and/or headers can be set using [path params](../../concepts/config-intro.md#dynamic-path-parameters).
+Clients can produce fire and forget HTTP request payload to a Kafka topic. The Kafka message key and headers are set using [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
 ## Cache
 
-Bindings can retrieve messages from a Kafka topic, filtered by message key and/or headers, with key and/or header values extracted from the [path params](../../concepts/config-intro.md#dynamic-path-parameters).
+Bindings can retrieve messages from a Kafka topic, filtered by message key and headers, with the key and header values extracted from the [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
-An HTTP response returns with an `etag` header. This fetch supports a conditional `GET if-none-match request`, returning `304` if not modified or `200` if modified (with a new `etag` header).
+An HTTP response returns with an `etag` header. This fetch supports a conditional `GET if-none-match request` returning `304` if not modified or `200` if modified (with a new `etag` header).
 
 ## CORS
 
@@ -58,10 +58,10 @@ Zilla supports Cross-Origin Resource Sharing (CORS) and allows you to specify fi
 
 ## Authorization
 
-Zilla has a modular config that includes the concept of a [Guard](../../reference/config/overview.md#guards) where you define your `guard` configuration and reference that `guard` to authorize a specific endpoint. Currently, Zilla supports JSON Web Token (JWT) authorization with the [`jwt`](../../reference/config/guards/guard-jwt.md) Guard.
+Zilla has a modular config that includes the concept of a [Guard](../../reference/config/overview.md#guards) where you define your `guard` configuration and reference that `guard` to authorize a specific endpoint. JSON Web Token (JWT) authorization is supported with the [`jwt`](../../reference/config/guards/guard-jwt.md) Guard.
 
 ### SSE Continuous Authorization
 
-Unlike REST, which authorizes individual requests, Zilla continuously authorizes the long-lived SSE connection stream. Zilla will send a "challenge" event, triggering the client to send up-to-date authorization credentials, such as a JWT token, before expiration. Zilla adheres to the secure by default method meaning, if authorization expires before the client responds to the "challenge" event, then the response stream is terminated.
+Unlike REST, which authorizes individual requests, Zilla continuously authorizes the long-lived SSE connection stream. Zilla will send a "challenge" event, triggering the client to send up-to-date authorization credentials, such as a JWT token, before expiration. Zilla adheres to the secure by default method, meaning that the response stream is terminated if the authorization expires before the client responds to the "challenge" event.
 
 Multiple SSE streams on the same HTTP/2 connection and authorized by the same JWT token are reauthorized by a single "challenge" event response from the client. They are all terminated if the token expiration isn't updated.
