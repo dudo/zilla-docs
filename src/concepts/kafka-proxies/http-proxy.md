@@ -46,7 +46,7 @@ Zilla sends the event id and last-event-id header to recover from an interrupted
 
 Clients can produce fire and forget HTTP request payload to a Kafka topic. The Kafka message key and headers are set using [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
-## Cache
+## Caching
 
 Bindings can retrieve messages from a Kafka topic, filtered by message key and headers, with the key and header values extracted from the [path params](../../concepts/config-intro.md#dynamic-path-parameters).
 
